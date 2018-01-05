@@ -4,6 +4,8 @@ This repository is here to collect some examples of how to setup Imply UI to run
 
 The basic idea is to run the Imply app in a mode (`userMode: header-user`) that will take user authentication information from a header (`x-imply-token`) and to have a reverse proxy that handles all the authentication and authorization work and which acts as a gatekeeper to the Imply app.
 
+There are many technologies that can be used to implement the reverse proxy server (e.g. [Nginx](https://www.nginx.com/)) in this case we use node.js and [node-http-proxy](https://github.com/nodejitsu/node-http-proxy) to showcase the functionality.
+
 
 ## Prerequisites
 
