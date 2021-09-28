@@ -1,16 +1,23 @@
 {
   "name": "imply-external-auth-examples",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Imply External Authentication Examples",
   "author": "Imply",
   "license": "MIT",
+  "volta": {
+    "node": "14.17.4",
+    "npm": "7.20.3"
+  },
+  "prettier": "@awesome-code-style/prettier-config",
   "dependencies": {
     "cookie-parser": "1.4.3",
     "express": "4.16.2",
     "express-basic-auth": "1.1.3",
     "express-session": "1.15.6",
-    "http-proxy": "1.16.2",
-    "passport": "0.4.0",
-    "passport-google-oauth2": "0.1.6"
+    "http-proxy": "1.16.2"
+  },
+  "devDependencies": {
+    "@awesome-code-style/eslint-config": "^3.1.0",
+    "@awesome-code-style/prettier-config": "^3.0.0"
   }
 }

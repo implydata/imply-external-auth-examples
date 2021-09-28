@@ -2,6 +2,9 @@ const express = require('express');
 const basicAuth = require('express-basic-auth');
 const httpProxy = require('http-proxy');
 
+// Note 3a1a is the name of whatever data cube you have
+const DATA_CUBE_NAME = 'wikipediae561';
+
 // Create a new Express application.
 let app = express();
 
@@ -9,14 +12,16 @@ let app = express();
 // Do the authentication
 // ----------------------------------------------------------
 
-app.use(basicAuth({
-  challenge: true,
-  users: {
-    'mr-admin': 'admin_secret1',
-    'mr-user': 'user_secret1',
-    'mr-user2': 'user_secret2'
-  }
-}))
+app.use(
+  basicAuth({
+    challenge: true,
+    users: {
+      'mr-admin': 'admin_secret1',
+      'mr-user': 'user_secret1',
+      'mr-user2': 'user_secret2',
+    },
+  }),
+);
 
 // ----------------------------------------------------------
 // Beyond this point the user is authenticated
@@ -35,8 +40,8 @@ function userNameToObject(userName) {
         actualRoles: [
           // This user uses the special super-admin role which can do anything.
           // Its permissions do not need to be declared explicitly
-          { name: 'super-admin' }
-        ]
+          { name: 'super-admin' },
+        ],
       };
 
     case 'mr-user':
@@ -52,12 +57,9 @@ function userNameToObject(userName) {
           // defined inline explicitly defining what permissions are accessible to this user.
           {
             name: 'some-user',
-            permissions: [
-              { name: 'AccessVisualization' },
-              { name: 'ChangeDashboards' }
-            ]
-          }
-        ]
+            permissions: [{ name: 'AccessVisualization' }, { name: 'ChangeDashboards' }],
+          },
+        ],
       };
 
     default:
@@ -69,13 +71,13 @@ function userNameToSubsetFilter(userName) {
   // This is a very crude user database.
   switch (userName) {
     case 'mr-admin':
-      return 'true'
+      return 'true';
 
     case 'mr-user':
-      return '$channel == "#en.wikipedia"'
+      return '$channel == "#en.wikipedia"';
 
     case 'mr-user2':
-      return '$channel == "#fr.wikipedia"'
+      return '$channel == "#fr.wikipedia"';
 
     default:
       throw new Error(`no such user ${userName}`);
@@ -84,24 +86,32 @@ function userNameToSubsetFilter(userName) {
 
 let proxy = httpProxy.createProxyServer({});
 
-proxy.on('proxyReq', function(proxyReq, req, res, options) {
+proxy.on('proxyReq', function (proxyReq, req, res, options) {
   // This will get executed on every request
   let implyToken = {
     expiry: Date.now() + 30 * 60 * 1000, // 30 min from now
-    appUser: userNameToObject(req.auth.user)
-  }
+    appUser: userNameToObject(req.auth.user),
+  };
 
   // The token is encoded as a base64 JSON string
-  const encodedImplyToken = new Buffer(JSON.stringify(implyToken), 'utf-8').toString('base64');
+  const encodedImplyToken = Buffer.from(JSON.stringify(implyToken), 'utf-8').toString('base64');
   proxyReq.setHeader('x-imply-token', encodedImplyToken);
 
-  let subsetFilters = {
-    // Note 3a1a is the name of whatever data cube you have
-    '3a1a': userNameToSubsetFilter(req.auth.user)
-  }
+  console.log(req.method + ' ' + req.url);
+  if (req.method === 'POST') {
+    let subsetFilters = {
+      [DATA_CUBE_NAME]: userNameToSubsetFilter(req.auth.user),
+    };
 
-  const encodedSubsetFitlers = new Buffer(JSON.stringify(subsetFilters), 'utf-8').toString('base64');
-  proxyReq.setHeader('x-imply-subset-filters', encodedSubsetFitlers);
+    const encodedSubsetFilters = Buffer.from(JSON.stringify(subsetFilters), 'utf-8').toString(
+      'base64',
+    );
+    proxyReq.setHeader('x-imply-subset-filters', encodedSubsetFilters);
+  }
+});
+
+proxy.on('error', () => {
+  console.error('Proxy error');
 });
 
 app.use((req, res) => {
@@ -110,10 +120,10 @@ app.use((req, res) => {
     //
     // userMode: header-user
     // headerSubsetFilters: require
-    target: 'http://localhost:9095'
+    target: 'http://localhost:9096',
   });
 });
 
 // Start the server
-app.listen(9096);
-console.log('Listening on 9096');
+app.listen(9097);
+console.log('Listening on 9097');

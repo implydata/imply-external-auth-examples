@@ -9,13 +9,15 @@ let app = express();
 // Do the authentication
 // ----------------------------------------------------------
 
-app.use(basicAuth({
-  challenge: true,
-  users: {
-    'mr-admin': 'admin_secret1',
-    'mr-user': 'user_secret1'
-  }
-}))
+app.use(
+  basicAuth({
+    challenge: true,
+    users: {
+      'mr-admin': 'admin_secret1',
+      'mr-user': 'user_secret1',
+    },
+  }),
+);
 
 // ----------------------------------------------------------
 // Beyond this point the user is authenticated
@@ -34,8 +36,8 @@ function userNameToObject(userName) {
         actualRoles: [
           // This user uses the special super-admin role which can do anything.
           // Its permissions do not need to be declared explicitly
-          { name: 'super-admin' }
-        ]
+          { name: 'super-admin' },
+        ],
       };
 
     case 'mr-user':
@@ -50,12 +52,9 @@ function userNameToObject(userName) {
           // defined inline explicitly defining what permissions are accessible to this user.
           {
             name: 'some-user',
-            permissions: [
-              { name: 'AccessVisualization' },
-              { name: 'ChangeDashboards' }
-            ]
-          }
-        ]
+            permissions: [{ name: 'AccessVisualization' }, { name: 'ChangeDashboards' }],
+          },
+        ],
       };
 
     default:
@@ -65,12 +64,12 @@ function userNameToObject(userName) {
 
 let proxy = httpProxy.createProxyServer({});
 
-proxy.on('proxyReq', function(proxyReq, req, res, options) {
+proxy.on('proxyReq', function (proxyReq, req, res, options) {
   // This will get executed on every request
   let implyToken = {
     expiry: Date.now() + 30 * 60 * 1000, // 30 min from now
-    appUser: userNameToObject(req.auth.user)
-  }
+    appUser: userNameToObject(req.auth.user),
+  };
 
   // The token is encoded as a base64 JSON string
   const encodedImplyToken = new Buffer(JSON.stringify(implyToken), 'utf-8').toString('base64');
@@ -80,7 +79,7 @@ proxy.on('proxyReq', function(proxyReq, req, res, options) {
 app.use((req, res) => {
   proxy.web(req, res, {
     // This assumes that you have Imply 2.4.2 or higher running with the quickstart config with `userMode: header-user`
-    target: 'http://localhost:9095'
+    target: 'http://localhost:9095',
   });
 });
 

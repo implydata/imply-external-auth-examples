@@ -6,21 +6,18 @@ The basic idea is to run the Imply app in a mode (`userMode: header-user`) that 
 
 There are many technologies that can be used to implement the reverse proxy server (e.g. [Nginx](https://www.nginx.com/)) in this case we use node.js and [node-http-proxy](https://github.com/nodejitsu/node-http-proxy) to showcase the functionality.
 
-
 ## Prerequisites
 
 You will need:
 
 - Imply 2.4.2 or greater - can be downloaded from https://imply.io/get-started
-- Node 6.2 or greater
-
+- Node 14 or greater
 
 ## Setup
 
 1. Start Imply. The quickest way to get Imply up and running is to follow the [quickstart](https://docs.imply.io/on-premise/quickstart). The examples assume that Imply UI is running on `localhost:9095`.
 2. Set the correct userMode in the config by editing config file (conf-quickstart/pivot/config.yaml) and adding `userMode: header-user` and restart the Imply UI server.
 3. Install dependencies by running `npm install` in this repo.
-
 
 ## HTTP BasicAuth example
 
